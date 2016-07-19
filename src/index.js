@@ -99,10 +99,10 @@ function getWelcomeResponse(callback) {
     var sessionAttributes = {};
     var cardTitle = "Welcome";
     var speechOutput = "Welcome to D Day Counter. " +
-        "Please ask me how many days left until the date you want. For example, how many days left until december 25th.";
+        "Please ask me, how many days until, the date you choose. For example, how many days until december 25th.";
     // If the user either does not reply to the welcome message or says something that is not
     // understood, they will be prompted again with this text.
-    var repromptText = "Please ask me how many days left until the date you want. For example, " +
+    var repromptText = "Please ask me how many days until the date you choose. For example, " +
         "how many days left until december 25th.";
     var shouldEndSession = false;
 
@@ -151,9 +151,9 @@ function setDateInSession(intent, session, callback) {
     }
 
     function errMsg() {
-      speechOutput = "I'm not sure what your date is. Please ask me how many days left until the date you want. For example, " + "how many days left until december 25th.";
-      repromptText = "Please ask me how many days left until the date you want. For example, " +
-          "how many days left until december 25th.";
+      speechOutput = "I'm not sure what your date is. You can say, how many days until, the date you want. For example, " + "how many days until december 25th.";
+      repromptText = "Please ask me how many days until the date you want. For example, " +
+          "how many days until december 25th.";
     }
 
     callback(sessionAttributes,
