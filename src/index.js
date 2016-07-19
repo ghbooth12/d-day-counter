@@ -72,7 +72,9 @@ function onIntent(intentRequest, session, callback) {
 
     // Dispatch to your skill's intent handlers
     if ("HowManyDaysUntilIntent" === intentName) {
-        setDateInSession(intent, session, callback);
+        countDaysInSession(intent, session, callback);
+    } else if ("SaveAsIntent" === intentName) {
+        saveDateFromSession(intent, session, callback);
     } else if ("AMAZON.HelpIntent" === intentName) {
         getWelcomeResponse(callback);
     } else if ("AMAZON.StopIntent" === intentName || "AMAZON.CancelIntent" === intentName) {
@@ -122,7 +124,7 @@ function handleSessionEndRequest(callback) {
 /**
  * Sets the color in the session and prepares the speech to reply to the user.
  */
-function setDateInSession(intent, session, callback) {
+function countDaysInSession(intent, session, callback) {
     var cardTitle = intent.name;
     var specifiedDate = intent.slots.Date.value;
     var repromptText = "";
@@ -135,14 +137,15 @@ function setDateInSession(intent, session, callback) {
         var dateArr = dayCounter.configDate(specifiedDate);
         var dateStr = dateArr.join(' ');
         var daysLeft = dayCounter.gapInDays(dayCounter.dateToObject(dateArr));
+        var saveMsg = "If you want to save the date, you can say, save as, event name. For example, save as, my birthday.";
         sessionAttributes = createDateAttributes(dateStr);
 
         if (daysLeft === 1) {
-          speechOutput = daysLeft + " day left until " + dateStr + ". ";
-          repromptText = daysLeft + " day left until " + dateStr + ". ";
+          speechOutput = daysLeft + " day left until " + dateStr + ". " + saveMsg;
+          repromptText = daysLeft + " day left until " + dateStr + ". " + saveMsg;
         } else if (daysLeft > 1) {
-          speechOutput = daysLeft + " days left until " + dateStr + ". ";
-          repromptText = daysLeft + " days left until " + dateStr + ". ";
+          speechOutput = daysLeft + " days left until " + dateStr + ". " + saveMsg;
+          repromptText = daysLeft + " days left until " + dateStr + ". " + saveMsg;
         } else {
           errMsg();
         }
@@ -166,32 +169,35 @@ function createDateAttributes(dateStr) {
     };
 }
 
-// -------------------- Later Feature ------------------------
-// function getColorFromSession(intent, session, callback) {
-//     var specifiedDate;
-//     var repromptText = null;
-//     var sessionAttributes = {};
-//     var shouldEndSession = false;
-//     var speechOutput = "";
-//
-//     if (session.attributes) {
-//         specifiedDate = session.attributes.specifiedDate;
-//     }
-//
-//     if (specifiedDate) {
-//         speechOutput = "Your date is " + specifiedDate + ". Goodbye.";
-//         shouldEndSession = true;
-//     } else {
-//         speechOutput = "I'm not sure what your date is, you can ask, how many days left until " +
-//             " december 25th.";
-//     }
-//
-//     // Setting repromptText to null signifies that we do not want to reprompt the user.
-//     // If the user does not respond or says something that is not understood, the session
-//     // will end.
-//     callback(sessionAttributes,
-//          buildSpeechletResponse(intent.name, speechOutput, repromptText, shouldEndSession));
-// }
+function saveDateFromSession(intent, session, callback) {
+  var repromptText = null;
+  var sessionAttributes = {};
+  var shouldEndSession = false;
+  var speechOutput = "";
+  var specifiedDate = session.attributes.specifiedDate;
+  var eventName = intent.slots.Event.value;
+
+  if (specifiedDate && eventName) {
+    setEvent(specifiedDate, eventName);
+    speechOutput = specifiedDate + " is saved as " + eventName + ". Goodbye.";
+    shouldEndSession = true;
+  } else if (!eventName) {
+    speechOutput = "I'm not sure what your event name is. For example, you can say, save as, my birthdy.";
+  } else {
+    speechOutput = "I'm not sure what your date is. For example, you can say, how many days until " + " december 25th.";
+  }
+
+  function setEvent(k, v) {
+    var storage = {};
+    storage[k] = v;
+  }
+
+  // Setting repromptText to null signifies that we do not want to reprompt the user.
+  // If the user does not respond or says something that is not understood, the session
+  // will end.
+  callback(sessionAttributes,
+       buildSpeechletResponse(intent.name, speechOutput, repromptText, shouldEndSession));
+}
 
 
 // --------------- Helpers that build all of the responses -----------------------
