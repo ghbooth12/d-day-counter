@@ -1,6 +1,6 @@
 HowManyDaysUntilIntent how many days until {Date}
-HowManyDaysUntilIntent how many days 'til {Date}
+HowManyDaysUntilIntent how many days til {Date}
 HowManyDaysUntilIntent how many days left until {Date}
-HowManyDaysUntilIntent how many days left 'til {Date}
+HowManyDaysUntilIntent how many days left til {Date}
 HowManyDaysUntilIntent how long until {Date}
-HowManyDaysUntilIntent how long 'til {Date}
+HowManyDaysUntilIntent how long til {Date}

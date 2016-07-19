@@ -1,4 +1,5 @@
 'use strict';
+var DayCounter = require('./DayCounter');
 // Route the incoming request based on type (LaunchRequest, IntentRequest,
 // etc.) The JSON body of the request is provided in the event parameter.
 exports.handler = function (event, context) {
@@ -9,11 +10,11 @@ exports.handler = function (event, context) {
          * Uncomment this if statement and populate with your skill's application ID to
          * prevent someone else from configuring a skill that sends requests to this function.
          */
-        /*
-        if (event.session.application.applicationId !== "amzn1.echo-sdk-ams.app.[unique-value-here]") {
+
+        if (event.session.application.applicationId !== "amzn1.ask.skill.8eceba64-c029-4c26-9674-a41dcea09778") {
              context.fail("Invalid Application ID");
         }
-        */
+
 
         if (event.session.new) {
             onSessionStarted({requestId: event.request.requestId}, event.session);
@@ -123,31 +124,45 @@ function handleSessionEndRequest(callback) {
  */
 function setDateInSession(intent, session, callback) {
     var cardTitle = intent.name;
-    var specifiedDateSlot = intent.slots.Date;
+    var specifiedDate = intent.slots.Date.value;
     var repromptText = "";
     var sessionAttributes = {};
     var shouldEndSession = false;
     var speechOutput = "";
 
-    if (specifiedDateSlot) {
-        var specifiedDate = specifiedDateSlot.value;
-        sessionAttributes = createDateAttributes(specifiedDate);
-        var daysLeft = gapInDays(dateToObject(specifiedDate));
-        speechOutput = daysLeft + " days left until " + specifiedDate + ". ";
-        repromptText = daysLeft + " days left until " + specifiedDate + ". ";
+    if (specifiedDate) {
+        var dayCounter = new DayCounter();
+        var dateArr = dayCounter.configDate(specifiedDate);
+        var dateStr = dateArr.join(' ');
+        var daysLeft = dayCounter.gapInDays(dayCounter.dateToObject(dateArr));
+        sessionAttributes = createDateAttributes(dateStr);
+
+        if (daysLeft === 1) {
+          speechOutput = daysLeft + " day left until " + dateStr + ". ";
+          repromptText = daysLeft + " day left until " + dateStr + ". ";
+        } else if (daysLeft > 1) {
+          speechOutput = daysLeft + " days left until " + dateStr + ". ";
+          repromptText = daysLeft + " days left until " + dateStr + ". ";
+        } else {
+          errMsg();
+        }
     } else {
-        speechOutput = "I'm not sure what your date is. Please ask me how many days left until the date you want. For example, " + "how many days left until december 25th.";
-        repromptText = "Please ask me how many days left until the date you want. For example, " +
-            "how many days left until december 25th.";
+      errMsg();
+    }
+
+    function errMsg() {
+      speechOutput = "I'm not sure what your date is. Please ask me how many days left until the date you want. For example, " + "how many days left until december 25th.";
+      repromptText = "Please ask me how many days left until the date you want. For example, " +
+          "how many days left until december 25th.";
     }
 
     callback(sessionAttributes,
          buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
 }
 
-function createDateAttributes(specifiedDate) {
+function createDateAttributes(dateStr) {
     return {
-        specifiedDate: specifiedDate
+        specifiedDate: dateStr
     };
 }
 
@@ -177,22 +192,6 @@ function createDateAttributes(specifiedDate) {
 //     callback(sessionAttributes,
 //          buildSpeechletResponse(intent.name, speechOutput, repromptText, shouldEndSession));
 // }
-
-
-// Date to object
-function dateToObject(dateStr) {
-  // Logic here
-  return new Date(2016, 11, 25);
-}
-
-function gapInDays(dateObj) {
-  var today = new Date();
-  var gapInMs = dateObj - today;
-  var msPerDay = 24 * 60 * 60 * 1000;
-  var gap = Math.floor(gapInMs / msPerDay);
-  return gap;
-}
-
 
 
 // --------------- Helpers that build all of the responses -----------------------
