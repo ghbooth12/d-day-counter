@@ -1,19 +1,22 @@
 {
   "intents": [
     {
-      "intent": "MyColorIsIntent",
+      "intent": "HowManyDaysUntilIntent",
       "slots": [
         {
-          "name": "Color",
-          "type": "LIST_OF_COLORS"
+          "name": "Date",
+          "type": "LIST_OF_DATES"
         }
       ]
     },
     {
-      "intent": "WhatsMyColorIntent"
+      "intent": "AMAZON.HelpIntent"
     },
     {
-      "intent": "AMAZON.HelpIntent"
+      "intent": "AMAZON.StopIntent"
+    },
+    {
+      "intent": "AMAZON.CancelIntent"
     }
   ]
 }

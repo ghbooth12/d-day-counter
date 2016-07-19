@@ -70,10 +70,8 @@ function onIntent(intentRequest, session, callback) {
         intentName = intentRequest.intent.name;
 
     // Dispatch to your skill's intent handlers
-    if ("MyColorIsIntent" === intentName) {
-        setColorInSession(intent, session, callback);
-    } else if ("WhatsMyColorIntent" === intentName) {
-        getColorFromSession(intent, session, callback);
+    if ("HowManyDaysUntilIntent" === intentName) {
+        setDateInSession(intent, session, callback);
     } else if ("AMAZON.HelpIntent" === intentName) {
         getWelcomeResponse(callback);
     } else if ("AMAZON.StopIntent" === intentName || "AMAZON.CancelIntent" === intentName) {
@@ -99,12 +97,12 @@ function getWelcomeResponse(callback) {
     // If we wanted to initialize the session to have some attributes we could add those here.
     var sessionAttributes = {};
     var cardTitle = "Welcome";
-    var speechOutput = "Welcome to the Alexa Skills Kit sample. " +
-        "Please tell me your favorite color by saying, my favorite color is red";
+    var speechOutput = "Welcome to D Day Counter. " +
+        "Please ask me how many days left until the date you want. For example, how many days left until december 25th.";
     // If the user either does not reply to the welcome message or says something that is not
     // understood, they will be prompted again with this text.
-    var repromptText = "Please tell me your favorite color by saying, " +
-        "my favorite color is red";
+    var repromptText = "Please ask me how many days left until the date you want. For example, " +
+        "how many days left until december 25th.";
     var shouldEndSession = false;
 
     callback(sessionAttributes,
@@ -113,7 +111,7 @@ function getWelcomeResponse(callback) {
 
 function handleSessionEndRequest(callback) {
     var cardTitle = "Session Ended";
-    var speechOutput = "Thank you for trying the Alexa Skills Kit sample. Have a nice day!";
+    var speechOutput = "Thank you for using D Day Counter. I hope to see you soon!";
     // Setting this to true ends the session and exits the skill.
     var shouldEndSession = true;
 
@@ -123,61 +121,79 @@ function handleSessionEndRequest(callback) {
 /**
  * Sets the color in the session and prepares the speech to reply to the user.
  */
-function setColorInSession(intent, session, callback) {
+function setDateInSession(intent, session, callback) {
     var cardTitle = intent.name;
-    var favoriteColorSlot = intent.slots.Color;
+    var specifiedDateSlot = intent.slots.Date;
     var repromptText = "";
     var sessionAttributes = {};
     var shouldEndSession = false;
     var speechOutput = "";
 
-    if (favoriteColorSlot) {
-        var favoriteColor = favoriteColorSlot.value;
-        sessionAttributes = createFavoriteColorAttributes(favoriteColor);
-        speechOutput = "I now know your favorite color is " + favoriteColor + ". You can ask me " +
-            "your favorite color by saying, what's my favorite color?";
-        repromptText = "You can ask me your favorite color by saying, what's my favorite color?";
+    if (specifiedDateSlot) {
+        var specifiedDate = specifiedDateSlot.value;
+        sessionAttributes = createDateAttributes(specifiedDate);
+        var daysLeft = gapInDays(dateToObject(specifiedDate));
+        speechOutput = daysLeft + " days left until " + specifiedDate + ". ";
+        repromptText = daysLeft + " days left until " + specifiedDate + ". ";
     } else {
-        speechOutput = "I'm not sure what your favorite color is. Please try again";
-        repromptText = "I'm not sure what your favorite color is. You can tell me your " +
-            "favorite color by saying, my favorite color is red";
+        speechOutput = "I'm not sure what your date is. Please ask me how many days left until the date you want. For example, " + "how many days left until december 25th.";
+        repromptText = "Please ask me how many days left until the date you want. For example, " +
+            "how many days left until december 25th.";
     }
 
     callback(sessionAttributes,
          buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
 }
 
-function createFavoriteColorAttributes(favoriteColor) {
+function createDateAttributes(specifiedDate) {
     return {
-        favoriteColor: favoriteColor
+        specifiedDate: specifiedDate
     };
 }
 
-function getColorFromSession(intent, session, callback) {
-    var favoriteColor;
-    var repromptText = null;
-    var sessionAttributes = {};
-    var shouldEndSession = false;
-    var speechOutput = "";
+// -------------------- Later Feature ------------------------
+// function getColorFromSession(intent, session, callback) {
+//     var specifiedDate;
+//     var repromptText = null;
+//     var sessionAttributes = {};
+//     var shouldEndSession = false;
+//     var speechOutput = "";
+//
+//     if (session.attributes) {
+//         specifiedDate = session.attributes.specifiedDate;
+//     }
+//
+//     if (specifiedDate) {
+//         speechOutput = "Your date is " + specifiedDate + ". Goodbye.";
+//         shouldEndSession = true;
+//     } else {
+//         speechOutput = "I'm not sure what your date is, you can ask, how many days left until " +
+//             " december 25th.";
+//     }
+//
+//     // Setting repromptText to null signifies that we do not want to reprompt the user.
+//     // If the user does not respond or says something that is not understood, the session
+//     // will end.
+//     callback(sessionAttributes,
+//          buildSpeechletResponse(intent.name, speechOutput, repromptText, shouldEndSession));
+// }
 
-    if (session.attributes) {
-        favoriteColor = session.attributes.favoriteColor;
-    }
 
-    if (favoriteColor) {
-        speechOutput = "Your favorite color is " + favoriteColor + ". Goodbye.";
-        shouldEndSession = true;
-    } else {
-        speechOutput = "I'm not sure what your favorite color is, you can say, my favorite color " +
-            " is red";
-    }
-
-    // Setting repromptText to null signifies that we do not want to reprompt the user.
-    // If the user does not respond or says something that is not understood, the session
-    // will end.
-    callback(sessionAttributes,
-         buildSpeechletResponse(intent.name, speechOutput, repromptText, shouldEndSession));
+// Date to object
+function dateToObject(dateStr) {
+  // Logic here
+  return new Date(2016, 11, 25);
 }
+
+function gapInDays(dateObj) {
+  var today = new Date();
+  var gapInMs = dateObj - today;
+  var msPerDay = 24 * 60 * 60 * 1000;
+  var gap = Math.floor(gapInMs / msPerDay);
+  return gap;
+}
+
+
 
 // --------------- Helpers that build all of the responses -----------------------
 
