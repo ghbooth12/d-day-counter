@@ -1,5 +1,7 @@
 'use strict';
-var DayCounter = require('./DayCounter');
+var DayCounter = require('./DayCounter'),
+    storage = require('./storage');
+
 // Route the incoming request based on type (LaunchRequest, IntentRequest,
 // etc.) The JSON body of the request is provided in the event parameter.
 exports.handler = function (event, context) {
@@ -147,16 +149,12 @@ function countDaysInSession(intent, session, callback) {
           speechOutput = daysLeft + " days left until " + dateStr + ". " + saveMsg;
           repromptText = daysLeft + " days left until " + dateStr + ". " + saveMsg;
         } else {
-          errMsg();
+          speechOutput = "Please tell me a future date.";
+          repromptText = "Please tell me a future date.";
         }
     } else {
-      errMsg();
-    }
-
-    function errMsg() {
       speechOutput = "I'm not sure what your date is. You can say, how many days until, the date you want. For example, " + "how many days until december 25th.";
-      repromptText = "Please ask me how many days until the date you want. For example, " +
-          "how many days until december 25th.";
+      repromptText = "Please ask me how many days until the date you want. For example, " + "how many days until december 25th.";
     }
 
     callback(sessionAttributes,
@@ -165,7 +163,10 @@ function countDaysInSession(intent, session, callback) {
 
 function createDateAttributes(dateStr) {
     return {
-        specifiedDate: dateStr
+        specifiedDate: dateStr,
+        currentStorage: {
+          events: {}
+        }
     };
 }
 
@@ -178,18 +179,19 @@ function saveDateFromSession(intent, session, callback) {
   var eventName = intent.slots.Event.value;
 
   if (specifiedDate && eventName) {
-    setEvent(specifiedDate, eventName);
+    storage.loadStorage(session, function (currentStorage) {
+      console.log(">>>>>>>>>>>>>>>inside loadStorage!!");
+      currentStorage.data.events[specifiedDate] = eventName;
+      console.log(">>>>>>>>>>>>>>>inside data, event", currentStorage.data.events);
+      currentStorage.save();
+    });
     speechOutput = specifiedDate + " is saved as " + eventName + ". Goodbye.";
     shouldEndSession = true;
+    speechOutput = "I think it is saved.";
   } else if (!eventName) {
     speechOutput = "I'm not sure what your event name is. For example, you can say, save as, my birthdy.";
   } else {
     speechOutput = "I'm not sure what your date is. For example, you can say, how many days until " + " december 25th.";
-  }
-
-  function setEvent(k, v) {
-    var storage = {};
-    storage[k] = v;
   }
 
   // Setting repromptText to null signifies that we do not want to reprompt the user.
