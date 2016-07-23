@@ -4,4 +4,7 @@ HowManyDaysUntilIntent how many days left until {Date}
 HowManyDaysUntilIntent how many days left til {Date}
 HowManyDaysUntilIntent how long until {Date}
 HowManyDaysUntilIntent how long til {Date}
+
 SaveAsIntent save as {Event}
+
+SayListIntent tell me the list

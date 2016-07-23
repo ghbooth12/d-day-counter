@@ -77,6 +77,8 @@ function onIntent(intentRequest, session, callback) {
         countDaysInSession(intent, session, callback);
     } else if ("SaveAsIntent" === intentName) {
         saveDateFromSession(intent, session, callback);
+    } else if ("SayListIntent" === intentName) {
+        sayList(intent, session, callback);
     } else if ("AMAZON.HelpIntent" === intentName) {
         getWelcomeResponse(callback);
     } else if ("AMAZON.StopIntent" === intentName || "AMAZON.CancelIntent" === intentName) {
@@ -165,12 +167,14 @@ function createDateAttributes(dateStr) {
     return {
         specifiedDate: dateStr,
         currentStorage: {
-          events: {}
+          // dates: [],
+          // events: {}
         }
     };
 }
 
 function saveDateFromSession(intent, session, callback) {
+  var cardTitle = intent.name;
   var repromptText = null;
   var sessionAttributes = {};
   var shouldEndSession = false;
@@ -181,6 +185,7 @@ function saveDateFromSession(intent, session, callback) {
   if (specifiedDate && eventName) {
     storage.loadStorage(session, function (currentStorage) {
       console.log(">>>>>>>>>>>>>>>inside loadStorage!!");
+      currentStorage.data.dates.push(specifiedDate);
       currentStorage.data.events[specifiedDate] = eventName;
       console.log(">>>>>>>>>>>>>>>inside data, event", currentStorage.data.events);
       currentStorage.save();
@@ -199,6 +204,25 @@ function saveDateFromSession(intent, session, callback) {
   // will end.
   callback(sessionAttributes,
        buildSpeechletResponse(intent.name, speechOutput, repromptText, shouldEndSession));
+}
+
+function sayList(intent, session, callback) {
+  var cardTitle = intent.name;
+  var msg = "";
+
+  storage.loadStorage(session, function (currentStorage)) {
+    var dates = currentStorage.data.dates;
+    var events = currentStorage.data.events;
+
+    for (var i = 0; i < dates.length; i++) {
+      var dateArr = dayCounter.configDate(dates[i]);
+      var daysLeft = dayCounter.gapInDays(dayCounter.dateToObject(dateArr));
+
+      msg += (dates[i] + ", " + events[dates[i]] + ", " + daysLeft + " days left.");
+    }
+  }
+
+  var speechOutput = msg;
 }
 
 

@@ -9,6 +9,7 @@ var storage = (function() {
       this.data = data;
     } else {
       this.data = {
+        dates: [],
         events: {}
       };
     }
@@ -44,12 +45,12 @@ var storage = (function() {
   return {
     loadStorage: function (session, callback) {
       console.log(">>>>>>>>>>>>>>>inside loadStorage in storage.js!!");
-      if (session.attributes.currentStorage) {
-        console.log(">>>>>>>>>>>>>>>inside if conditional in storage.js!!");
-        console.log('get storage from session=' + session.attributes.currentStorage);
-        callback(new Storage(session, session.attributes.currentStorage));
-        return;
-      }
+      // if (session.attributes.currentStorage) {
+      //   console.log(">>>>>>>>>>>>>>>inside if conditional in storage.js!!");
+      //   console.log('get storage from session=' + session.attributes.currentStorage);
+      //   callback(new Storage(session, session.attributes.currentStorage));
+      //   return;
+      // }
       dynamodb.getItem({
         TableName: 'DDayCounterUserData',
         Key: {

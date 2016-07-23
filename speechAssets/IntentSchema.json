@@ -19,6 +19,9 @@
       ]
     },
     {
+      "intent": "SayListIntent"
+    },
+    {
       "intent": "AMAZON.HelpIntent"
     },
     {
