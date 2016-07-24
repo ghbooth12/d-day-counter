@@ -1,25 +1,13 @@
 {
   "intents": [
     {
-      "intent": "HowManyDaysUntilIntent",
+      "intent": "HowManyWeeksUntilIntent",
       "slots": [
         {
           "name": "Date",
           "type": "LIST_OF_DATES"
         }
       ]
-    },
-    {
-      "intent": "SaveAsIntent",
-      "slots": [
-        {
-          "name": "Event",
-          "type": "LIST_OF_EVENTS"
-        }
-      ]
-    },
-    {
-      "intent": "SayListIntent"
     },
     {
       "intent": "AMAZON.HelpIntent"

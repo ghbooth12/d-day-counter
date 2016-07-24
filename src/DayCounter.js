@@ -116,13 +116,35 @@ var DayCounter = function() {
     }
   };
 
-  this.gapInDays = function(dateObj) {
-    if (!dateObj) { return false; }
-
+  this.weeksAndDays = function(dateObj, dateStr) {
     var gapInMs = dateObj - today;
     var msPerDay = 24 * 60 * 60 * 1000;
-    var gap = Math.ceil(gapInMs / msPerDay);
-    return gap;
+    var inDays = Math.ceil(gapInMs / msPerDay);
+    var inWeeks = Math.floor(inDays / 7);
+    var remainingDays = inDays % 7;
+    var weekStr, dayStr, output;
+
+    if (inDays >= 1) {
+      if (inWeeks === 1) {
+        weekStr = inWeeks + " week and ";
+      } else if (inWeeks > 1) {
+        weekStr = inWeeks + " weeks and ";
+      } else {
+        weekStr = "";
+      }
+
+      if (remainingDays === 1) {
+        dayStr = remainingDays + " day";
+      } else if (remainingDays > 1) {
+        dayStr = remainingDays + " days";
+      }
+
+      output = weekStr + dayStr + " left until " + dateStr + ".";
+    } else {
+      output = "Please tell me a future date.";
+    }
+
+    return output;
   };
 };
 
