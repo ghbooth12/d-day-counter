@@ -126,9 +126,9 @@ var DayCounter = function() {
 
     if (inDays >= 1) {
       if (inWeeks === 1) {
-        weekStr = inWeeks + " week and ";
+        weekStr = inWeeks + " week";
       } else if (inWeeks > 1) {
-        weekStr = inWeeks + " weeks and ";
+        weekStr = inWeeks + " weeks";
       } else {
         weekStr = "";
       }
@@ -137,9 +137,15 @@ var DayCounter = function() {
         dayStr = remainingDays + " day";
       } else if (remainingDays > 1) {
         dayStr = remainingDays + " days";
+      } else {
+        dayStr = "";
       }
 
-      output = weekStr + dayStr + " left until " + dateStr + ".";
+      if (weekStr && dayStr) {
+        output = weekStr + "and" + dayStr + " left until " + dateStr + ".";
+      } else {
+        output = weekStr + dayStr + " left until " + dateStr + ".";
+      }
     } else {
       output = "Please tell me a future date.";
     }
