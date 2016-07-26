@@ -142,7 +142,7 @@ var DayCounter = function() {
       }
 
       if (weekStr && dayStr) {
-        output = weekStr + "and" + dayStr + " left until " + dateStr + ".";
+        output = weekStr + " and " + dayStr + " left until " + dateStr + ".";
       } else {
         output = weekStr + dayStr + " left until " + dateStr + ".";
       }
