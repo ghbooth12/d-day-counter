@@ -1,5 +1,10 @@
 'use strict';
+var http = require('http');
 var DayCounter = require('./DayCounter');
+var ua = require('universal-analytics');
+
+var server = http.createServer(function (request, response) {
+  response.writeHead(200, {'Content-Type': 'text/plain'});
 // Route the incoming request based on type (LaunchRequest, IntentRequest,
 // etc.) The JSON body of the request is provided in the event parameter.
 exports.handler = function (event, context) {
@@ -11,9 +16,9 @@ exports.handler = function (event, context) {
          * prevent someone else from configuring a skill that sends requests to this function.
          */
 
-        if (event.session.application.applicationId !== "amzn1.ask.skill.8eceba64-c029-4c26-9674-a41dcea09778") {
-             context.fail("Invalid Application ID");
-        }
+        // if (event.session.application.applicationId !== "amzn1.ask.skill.8eceba64-c029-4c26-9674-a41dcea09778") {
+        //      context.fail("Invalid Application ID");
+        // }
 
 
         if (event.session.new) {
@@ -158,6 +163,18 @@ function setDateInSession(intent, session, callback) {
       "how many days until december 25th.";
     }
 
+    // Google Analytics
+    var intentTrackingID = ua('UA-81433628-1');
+    console.log("sending data to GA");
+
+    // intentTrackingID.event('invalid request', 'blank value').send();
+
+    var requestedData = ('myData' + speechOutput).toString();
+    intentTrackingID.event('success', requestedData).send();
+    console.log("sending data to GA");
+
+    // intentTrackingID.event('error', error.toString()).send();
+
     callback(sessionAttributes,
          buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
 }
@@ -193,3 +210,11 @@ function buildResponse(sessionAttributes, speechletResponse) {
         response: speechletResponse
     };
 }
+
+response.end('Hello World\n');
+
+});
+
+server.listen(8000);
+
+console.log('Server running at http://127.0.0.1:8000');
