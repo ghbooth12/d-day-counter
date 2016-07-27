@@ -74,7 +74,7 @@ function onIntent(intentRequest, session, callback) {
     if ("HowManyWeeksUntilIntent" === intentName) {
         setDateInSession(intent, session, callback);
     } else if ("AMAZON.HelpIntent" === intentName) {
-        getWelcomeResponse(callback);
+        helpSession(callback);
     } else if ("AMAZON.StopIntent" === intentName || "AMAZON.CancelIntent" === intentName) {
         handleSessionEndRequest(callback);
     } else {
@@ -98,7 +98,7 @@ function getWelcomeResponse(callback) {
     // If we wanted to initialize the session to have some attributes we could add those here.
     var sessionAttributes = {};
     var cardTitle = "Welcome";
-    var speechOutput = "Welcome to D Day Counter. " +
+    var speechOutput = "Welcome to Date Counter. " +
         "Please ask me, how many days until, the date you choose. For example, how many days until december 25th.";
     // If the user either does not reply to the welcome message or says something that is not
     // understood, they will be prompted again with this text.
@@ -110,9 +110,23 @@ function getWelcomeResponse(callback) {
         buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
 }
 
+function helpSession(callback) {
+    // If we wanted to initialize the session to have some attributes we could add those here.
+    var sessionAttributes = {};
+    var cardTitle = "Help";
+    var speechOutput = "You can ask, how many days until, the date you choose. For example, how many days until december 25th.";
+    // If the user either does not reply to the message or says something that is not
+    // understood, they will be prompted again with this text.
+    var repromptText = "Please ask me how many days until the date you choose. For example, how many days until december 25th.";
+    var shouldEndSession = false;
+
+    callback(sessionAttributes,
+        buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
+}
+
 function handleSessionEndRequest(callback) {
     var cardTitle = "Session Ended";
-    var speechOutput = "Thank you for using D Day Counter. I hope to see you soon!";
+    var speechOutput = "Thank you for using Date Counter. I hope to see you soon!";
     // Setting this to true ends the session and exits the skill.
     var shouldEndSession = true;
 
@@ -128,15 +142,13 @@ function setDateInSession(intent, session, callback) {
     var sessionAttributes = {};
     var speechOutput = "";
     var repromptText = "";
-    var shouldEndSession = false;
+    var shouldEndSession = true;
 
     if (specifiedDate) {
       var dayCounter = new DayCounter();
       var dateArr = dayCounter.configDate(specifiedDate);
-      var dateStr = dateArr.join(' ');
       var dateObj = dayCounter.dateToObject(dateArr);
-      var answerSpeech = dayCounter.weeksAndDays(dateObj, dateStr);
-      sessionAttributes = createDateAttributes(dateStr);
+      var answerSpeech = dayCounter.weeksAndDays(dateObj);
 
       speechOutput = answerSpeech;
       repromptText = answerSpeech;
@@ -151,12 +163,6 @@ function setDateInSession(intent, session, callback) {
 }
 
 
-function createDateAttributes(dateStr) {
-    return {
-        specifiedDate: dateStr
-    };
-}
-
 // --------------- Helpers that build all of the responses -----------------------
 
 function buildSpeechletResponse(title, output, repromptText, shouldEndSession) {
@@ -167,8 +173,8 @@ function buildSpeechletResponse(title, output, repromptText, shouldEndSession) {
         },
         card: {
             type: "Simple",
-            title: "SessionSpeechlet - " + title,
-            content: "SessionSpeechlet - " + output
+            title: title,
+            content: output
         },
         reprompt: {
             outputSpeech: {
