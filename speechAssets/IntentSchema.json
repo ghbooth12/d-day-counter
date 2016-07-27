@@ -5,7 +5,7 @@
       "slots": [
         {
           "name": "Date",
-          "type": "LIST_OF_DATES"
+          "type": "AMAZON.DATE"
         }
       ]
     },
