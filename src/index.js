@@ -1,9 +1,5 @@
 'use strict';
-var http = require('http');
 var DayCounter = require('./DayCounter');
-var ua = require('universal-analytics');
-var final = "";
-
 // Route the incoming request based on type (LaunchRequest, IntentRequest,
 // etc.) The JSON body of the request is provided in the event parameter.
 exports.handler = function (event, context) {
@@ -15,9 +11,9 @@ exports.handler = function (event, context) {
          * prevent someone else from configuring a skill that sends requests to this function.
          */
 
-        // if (event.session.application.applicationId !== "amzn1.ask.skill.8eceba64-c029-4c26-9674-a41dcea09778") {
-        //      context.fail("Invalid Application ID");
-        // }
+        if (event.session.application.applicationId !== "amzn1.ask.skill.8eceba64-c029-4c26-9674-a41dcea09778") {
+             context.fail("Invalid Application ID");
+        }
 
 
         if (event.session.new) {
@@ -28,14 +24,12 @@ exports.handler = function (event, context) {
             onLaunch(event.request,
                 event.session,
                 function callback(sessionAttributes, speechletResponse) {
-                    final = buildResponse(sessionAttributes, speechletResponse);
                     context.succeed(buildResponse(sessionAttributes, speechletResponse));
                 });
         } else if (event.request.type === "IntentRequest") {
             onIntent(event.request,
                 event.session,
                 function callback(sessionAttributes, speechletResponse) {
-                    final = buildResponse(sessionAttributes, speechletResponse);
                     context.succeed(buildResponse(sessionAttributes, speechletResponse));
                 });
         } else if (event.request.type === "SessionEndedRequest") {
@@ -143,12 +137,12 @@ function handleSessionEndRequest(callback) {
  * Sets the color in the session and prepares the speech to reply to the user.
  */
 function setDateInSession(intent, session, callback) {
-    var cardTitle = intent.name;
+    var cardTitle;
     var specifiedDate = intent.slots.Date.value;
     var sessionAttributes = {};
     var speechOutput = "";
     var repromptText = "";
-    var shouldEndSession = true;
+    var shouldEndSession;
 
     if (specifiedDate) {
       var dayCounter = new DayCounter();
@@ -156,80 +150,60 @@ function setDateInSession(intent, session, callback) {
       var dateObj = dayCounter.dateToObject(dateArr);
       var answerSpeech = dayCounter.weeksAndDays(dateObj);
 
-      speechOutput = answerSpeech;
-      repromptText = answerSpeech;
+      if (answerSpeech) {
+        speechOutput = answerSpeech;
+        repromptText = answerSpeech;
+
+        cardTitle = "Your Date: " + specifiedDate;
+        shouldEndSession = true;
+      } else {
+        speechOutput = "Please make sure the date is correct.";
+        repromptText = "Please make sure the date is correct.";
+
+        cardTitle = "Invalid Date";
+        shouldEndSession = false;
+      }
     } else {
       speechOutput = "I'm not sure what your date is. You can say, how many days until, the date you want. For example, " + "how many days until december 25th.";
       repromptText = "Please ask me how many days until the date you want. For example, " +
       "how many days until december 25th.";
+
+      cardTitle = "Date Not Found";
+      shouldEndSession = false;
     }
-
-    // Google Analytics
-    var intentTrackingID = ua('UA-81433628-1');
-    console.log("sending data to GA");
-
-    // intentTrackingID.event('invalid request', 'blank value').send();
-
-    var requestedData = ('myData' + speechOutput).toString();
-    intentTrackingID.event('success', requestedData).send();
-    console.log("sending data to GA");
-
-    // intentTrackingID.event('error', error.toString()).send();
 
     callback(sessionAttributes,
          buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
 }
 
 
-// // --------------- Helpers that build all of the responses -----------------------
-//
-// function buildSpeechletResponse(title, output, repromptText, shouldEndSession) {
-//     return {
-//         outputSpeech: {
-//             type: "PlainText",
-//             text: output
-//         },
-//         card: {
-//             type: "Simple",
-//             title: title,
-//             content: output
-//         },
-//         reprompt: {
-//             outputSpeech: {
-//                 type: "PlainText",
-//                 text: repromptText
-//             }
-//         },
-//         shouldEndSession: shouldEndSession
-//     };
-// }
-//
-// function buildResponse(sessionAttributes, speechletResponse) {
-//     return {
-//         version: "1.0",
-//         sessionAttributes: sessionAttributes,
-//         response: speechletResponse
-//     };
-// }
-
-
-// --------------- For local server testing -----------------------
+// --------------- Helpers that build all of the responses -----------------------
 
 function buildSpeechletResponse(title, output, repromptText, shouldEndSession) {
-    return '{ "outputSpeech": { "type": "PlainText", "text": output }, "card": { "type": "Simple", "title": title, "content": output }, "reprompt": { "outputSpeech": { "type": "PlainText", "text": repromptText } }, "shouldEndSession": shouldEndSession }';
+    return {
+        outputSpeech: {
+            type: "PlainText",
+            text: output
+        },
+        card: {
+            type: "Simple",
+            title: title,
+            content: output
+        },
+        reprompt: {
+            outputSpeech: {
+                type: "PlainText",
+                text: repromptText
+            }
+        },
+        shouldEndSession: shouldEndSession
+    };
 }
 
 function buildResponse(sessionAttributes, speechletResponse) {
-    return '{ version: "1.0", sessionAttributes: sessionAttributes, response: speechletResponse }';
+    return {
+        version: "1.0",
+        sessionAttributes: sessionAttributes,
+        response: speechletResponse
+    };
 }
-
-
-var server = http.createServer(function (request, response) {
-  response.writeHead(200, {'Content-Type': 'text/plain'});
-  response.end(exports.handler());
-  console.log("tesing");
-});
-
-server.listen(8000);
-
-console.log('Server running at http://127.0.0.1:8000');
