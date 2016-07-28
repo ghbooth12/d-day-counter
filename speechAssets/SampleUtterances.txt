@@ -15,3 +15,6 @@ HowManyWeeksUntilIntent how long till {Date}
 Alexa, ask Date Counter how many weeks until December 25th
 Alexa, ask Date Counter how many days until December 25th 2018
 Alexa, ask Date Counter how long till December 25th
+
+
+how many days until august first

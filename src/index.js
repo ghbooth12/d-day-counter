@@ -2,9 +2,8 @@
 var http = require('http');
 var DayCounter = require('./DayCounter');
 var ua = require('universal-analytics');
+var final = "";
 
-var server = http.createServer(function (request, response) {
-  response.writeHead(200, {'Content-Type': 'text/plain'});
 // Route the incoming request based on type (LaunchRequest, IntentRequest,
 // etc.) The JSON body of the request is provided in the event parameter.
 exports.handler = function (event, context) {
@@ -29,12 +28,14 @@ exports.handler = function (event, context) {
             onLaunch(event.request,
                 event.session,
                 function callback(sessionAttributes, speechletResponse) {
+                    final = buildResponse(sessionAttributes, speechletResponse);
                     context.succeed(buildResponse(sessionAttributes, speechletResponse));
                 });
         } else if (event.request.type === "IntentRequest") {
             onIntent(event.request,
                 event.session,
                 function callback(sessionAttributes, speechletResponse) {
+                    final = buildResponse(sessionAttributes, speechletResponse);
                     context.succeed(buildResponse(sessionAttributes, speechletResponse));
                 });
         } else if (event.request.type === "SessionEndedRequest") {
@@ -180,39 +181,53 @@ function setDateInSession(intent, session, callback) {
 }
 
 
-// --------------- Helpers that build all of the responses -----------------------
+// // --------------- Helpers that build all of the responses -----------------------
+//
+// function buildSpeechletResponse(title, output, repromptText, shouldEndSession) {
+//     return {
+//         outputSpeech: {
+//             type: "PlainText",
+//             text: output
+//         },
+//         card: {
+//             type: "Simple",
+//             title: title,
+//             content: output
+//         },
+//         reprompt: {
+//             outputSpeech: {
+//                 type: "PlainText",
+//                 text: repromptText
+//             }
+//         },
+//         shouldEndSession: shouldEndSession
+//     };
+// }
+//
+// function buildResponse(sessionAttributes, speechletResponse) {
+//     return {
+//         version: "1.0",
+//         sessionAttributes: sessionAttributes,
+//         response: speechletResponse
+//     };
+// }
+
+
+// --------------- For local server testing -----------------------
 
 function buildSpeechletResponse(title, output, repromptText, shouldEndSession) {
-    return {
-        outputSpeech: {
-            type: "PlainText",
-            text: output
-        },
-        card: {
-            type: "Simple",
-            title: title,
-            content: output
-        },
-        reprompt: {
-            outputSpeech: {
-                type: "PlainText",
-                text: repromptText
-            }
-        },
-        shouldEndSession: shouldEndSession
-    };
+    return '{ "outputSpeech": { "type": "PlainText", "text": output }, "card": { "type": "Simple", "title": title, "content": output }, "reprompt": { "outputSpeech": { "type": "PlainText", "text": repromptText } }, "shouldEndSession": shouldEndSession }';
 }
 
 function buildResponse(sessionAttributes, speechletResponse) {
-    return {
-        version: "1.0",
-        sessionAttributes: sessionAttributes,
-        response: speechletResponse
-    };
+    return '{ version: "1.0", sessionAttributes: sessionAttributes, response: speechletResponse }';
 }
 
-response.end('Hello World\n');
 
+var server = http.createServer(function (request, response) {
+  response.writeHead(200, {'Content-Type': 'text/plain'});
+  response.end(exports.handler());
+  console.log("tesing");
 });
 
 server.listen(8000);
