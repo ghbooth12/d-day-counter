@@ -47,7 +47,7 @@ var DayCounter = function() {
         output = weekStr + dayStr + " left until then.";
       }
     } else {
-      output = "Please tell me a future date.";
+      output = false;
     }
 
     return output;
