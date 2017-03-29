@@ -1,8 +1,9 @@
 ## D-day Counter
 Alexa is a voice-enabled platform used to interact with devices such as Amazon Echo, Dot, and Tap. Alexa has a lot of great skills to satisfy your needs, such as playing music, adjusting the brightness of the lighting, or reading an audio book. Alexa is always ready to perform our commands, so it’s very convenient not to need to push buttons or tap the device to wake up our devices.
-Another skill I’d like to make is a d-day counter, which can tell how many weeks and days remaining till the date that the user mention.
 
-### Design the voice interaction menu of Skill
+The D-day counter skill can tell how many days and weeks remaining till the user's input target date.
+
+### Design the voice interaction menu of the Skill
 1. Intent Schema & Custom Slot Type
 ```javascript
 {
